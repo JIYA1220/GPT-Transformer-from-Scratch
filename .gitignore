@@ -1,0 +1,13 @@
+# Models (Over 100MB limit for standard GitHub)
+*.pth
+# Data
+data/tinystories.txt
+# Environment & IDE
+.venv/
+.idea/
+__pycache__/
+*.pyc
+# Logs & Plot
+experiments/log.csv
+experiments/*.png
+loss-plot.png

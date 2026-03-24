@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>My LLM</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+    font-family: Segoe UI, sans-serif;
+    background: #0d0d1a;
+    color: #e8e8f0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+#sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #13132a;
+    border-right: 1px solid #2a2a4a;
+    padding: 16px 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.logo { font-size:1.3rem; font-weight:700; color:#7c6af7; }
+.logo span { color:#00d4ff; }
+.sub { font-size:0.75rem; color:#7a7a9a; margin-top:3px; }
+.stitle {
+    font-size:0.68rem;
+    font-weight:700;
+    color:#7a7a9a;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-bottom:8px;
+}
+.sw { margin-bottom:11px; }
+.sw-top {
+    display:flex;
+    justify-content:space-between;
+    font-size:0.83rem;
+    margin-bottom:4px;
+}
+.sv {
+    background:#16213e;
+    color:#7c6af7;
+    padding:1px 7px;
+    border-radius:8px;
+    font-size:0.8rem;
+    font-weight:600;
+}
+input[type=range] { width:100%; accent-color:#7c6af7; cursor:pointer; }
+.sh { font-size:0.68rem; color:#555580; margin-top:2px; }
+.igrid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.ic {
+    background:#16213e;
+    border:1px solid #2a2a4a;
+    border-radius:7px;
+    padding:9px 5px;
+    text-align:center;
+}
+.ic .v { font-size:0.9rem; font-weight:700; color:#7c6af7; }
+.ic .l { font-size:0.67rem; color:#7a7a9a; margin-top:2px; }
+.pb {
+    display:block;
+    width:100%;
+    text-align:left;
+    padding:8px 11px;
+    margin-bottom:5px;
+    background:#16213e;
+    border:1px solid #2a2a4a;
+    border-radius:7px;
+    color:#e8e8f0;
+    font-size:0.81rem;
+    cursor:pointer;
+    transition:all 0.15s;
+}
+.pb:hover { background:#2a2a4a; border-color:#7c6af7; color:#7c6af7; }
+.cb {
+    display:block;
+    width:100%;
+    padding:8px 11px;
+    margin-bottom:6px;
+    background:#16213e;
+    border:1px solid #2a2a4a;
+    border-radius:7px;
+    color:#e8e8f0;
+    font-size:0.82rem;
+    cursor:pointer;
+    text-align:left;
+    transition:all 0.15s;
+}
+.cb:hover { background:#2a2a4a; border-color:#7c6af7; }
+#btn-clear:hover { background:#7f1d1d; border-color:#ef4444; color:white; }
+#main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+#topbar {
+    padding:13px 18px;
+    border-bottom:1px solid #2a2a4a;
+    background:#1a1a2e;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+#topbar .t { font-size:0.95rem; font-weight:600; }
+.status {
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:0.78rem;
+    color:#7a7a9a;
+}
+.dot {
+    width:7px;
+    height:7px;
+    background:#22c55e;
+    border-radius:50%;
+    animation:blink 2s infinite;
+}
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+#chat {
+    flex:1;
+    overflow-y:auto;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    background:#0d0d1a;
+}
+#chat::-webkit-scrollbar { width:4px; }
+#chat::-webkit-scrollbar-thumb { background:#2a2a4a; border-radius:2px; }
+.msg { display:flex; flex-direction:column; max-width:80%; }
+.msg.u { align-self:flex-end; }
+.msg.b { align-self:flex-start; }
+.meta {
+    font-size:0.69rem;
+    color:#555580;
+    margin-bottom:3px;
+    padding:0 3px;
+    display:flex;
+    justify-content:space-between;
+}
+.bubble {
+    padding:11px 15px;
+    border-radius:13px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+    font-size:0.92rem;
+    border:1px solid #2a2a4a;
+}
+.msg.u .bubble {
+    background:#1e1b4b;
+    border-radius:13px 13px 3px 13px;
+}
+.msg.b .bubble {
+    background:#0f2d1f;
+    border-radius:13px 13px 13px 3px;
+}
+.ab {
+    background:none;
+    border:none;
+    color:#555580;
+    cursor:pointer;
+    font-size:0.73rem;
+    padding:1px 4px;
+    border-radius:3px;
+}
+.ab:hover { color:#7c6af7; }
+.dots span {
+    animation:bounce 1.2s infinite;
+    display:inline-block;
+    font-size:1.2rem;
+}
+.dots span:nth-child(2) { animation-delay:0.2s; }
+.dots span:nth-child(3) { animation-delay:0.4s; }
+@keyframes bounce {
+    0%,80%,100% { transform:translateY(0); }
+    40% { transform:translateY(-5px); }
+}
+#stats {
+    padding:5px 18px;
+    background:#1a1a2e;
+    border-top:1px solid #2a2a4a;
+    font-size:0.71rem;
+    color:#555580;
+    display:flex;
+    gap:14px;
+}
+#stats b { color:#7c6af7; }
+#iarea {
+    padding:11px 15px;
+    background:#1a1a2e;
+    border-top:1px solid #2a2a4a;
+    display:flex;
+    gap:9px;
+    align-items:flex-end;
+}
+#pinput {
+    flex:1;
+    padding:10px 15px;
+    border-radius:21px;
+    border:1.5px solid #2a2a4a;
+    background:#13132a;
+    color:#e8e8f0;
+    font-size:0.92rem;
+    outline:none;
+    resize:none;
+    min-height:44px;
+    max-height:100px;
+    font-family:inherit;
+    transition:border-color 0.2s;
+}
+#pinput:focus { border-color:#7c6af7; }
+#sbtn {
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:none;
+    background:linear-gradient(135deg,#7c6af7,#00d4ff);
+    color:white;
+    font-size:1.1rem;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:transform 0.15s;
+}
+#sbtn:hover { transform:scale(1.08); }
+#sbtn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div>
+    <div class="logo">My <span>LLM</span></div>
+    <div class="sub">Built from scratch · PyTorch · 70M params</div>
+  </div>
+  <div>
+    <div class="stitle">Settings</div>
+    <div class="sw">
+      <div class="sw-top">
+        <span>Temperature</span>
+        <span class="sv" id="tv">0.8</span>
+      </div>
+      <input type="range" id="sl-temp" min="0.1" max="2.0" step="0.1" value="0.8">
+      <div class="sh">Low = focused · High = creative</div>
+    </div>
+    <div class="sw">
+      <div class="sw-top">
+        <span>Top-K</span>
+        <span class="sv" id="kv">40</span>
+      </div>
+      <input type="range" id="sl-topk" min="1" max="100" step="1" value="40">
+      <div class="sh">Lower = more focused</div>
+    </div>
+    <div class="sw">
+      <div class="sw-top">
+        <span>Max Tokens</span>
+        <span class="sv" id="mv">120</span>
+      </div>
+      <input type="range" id="sl-maxt" min="20" max="200" step="10" value="120">
+      <div class="sh">Controls response length</div>
+    </div>
+  </div>
+  <div>
+    <div class="stitle">Model Info</div>
+    <div class="igrid">
+      <div class="ic"><div class="v">18.88</div><div class="l">Perplexity</div></div>
+      <div class="ic"><div class="v">70M</div><div class="l">Parameters</div></div>
+      <div class="ic"><div class="v">6</div><div class="l">Layers</div></div>
+      <div class="ic"><div class="v">8</div><div class="l">Heads</div></div>
+      <div class="ic"><div class="v">RMS</div><div class="l">Norm</div></div>
+      <div class="ic"><div class="v">CPU</div><div class="l">Device</div></div>
+    </div>
+  </div>
+  <div>
+    <div class="stitle">Quick Prompts</div>
+    <button class="pb" onclick="setP('Once upon a time')">Once upon a time</button>
+    <button class="pb" onclick="setP('There was a little boy named')">There was a little boy named</button>
+    <button class="pb" onclick="setP('One day in the forest')">One day in the forest</button>
+    <button class="pb" onclick="setP('A brave girl named Lily')">A brave girl named Lily</button>
+    <button class="pb" onclick="setP('The puppy was very happy')">The puppy was very happy</button>
+    <button class="pb" onclick="setP('In a magical land far away')">In a magical land far away</button>
+    <button class="pb" onclick="setP('A tiny dragon named')">A tiny dragon named</button>
+    <button class="pb" onclick="setP('The old wizard said')">The old wizard said</button>
+  </div>
+  <div>
+    <div class="stitle">Controls</div>
+    <button class="cb" onclick="dlStories()">Download Stories</button>
+    <button class="cb" onclick="togTheme()">Toggle Theme</button>
+    <button class="cb" id="btn-clear" onclick="clrChat()">Clear Chat</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div class="t">Story Generator</div>
+    <div class="status">
+      <div class="dot"></div>
+      <span>Model Ready · PPL 18.88</span>
+    </div>
+  </div>
+  <div id="chat">
+    <div class="msg b">
+      <div class="meta"><span>LLM</span></div>
+      <div class="bubble">Hello! I am your custom LLM built from scratch!
+
+Perplexity: 18.88 — better than human level!
+Parameters: 70M  |  Norm: RMSNorm  |  Device: CPU
+
+Click any prompt on the left or type below!</div>
+    </div>
+  </div>
+  <div id="stats">
+    Tokens: <b id="st-tok">0</b>
+    &nbsp;|&nbsp;
+    Messages: <b id="st-msg">0</b>
+    &nbsp;|&nbsp;
+    Last: <b id="st-last">—</b>
+  </div>
+  <div id="iarea">
+    <textarea id="pinput" rows="1"
+      placeholder="Type your story... (Enter to send)"></textarea>
+    <button id="sbtn" onclick="doSend()">&#x27A4;</button>
+  </div>
+</div>
+
+<script>
+var busy   = false;
+var tokens = 0;
+var msgs   = 0;
+var light  = false;
+
+document.getElementById('sl-temp').oninput = function() {
+    document.getElementById('tv').textContent =
+        parseFloat(this.value).toFixed(1);
+};
+document.getElementById('sl-topk').oninput = function() {
+    document.getElementById('kv').textContent = this.value;
+};
+document.getElementById('sl-maxt').oninput = function() {
+    document.getElementById('mv').textContent = this.value;
+};
+
+document.getElementById('pinput').onkeydown = function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        doSend();
+    }
+};
+document.getElementById('pinput').oninput = function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+};
+
+function setP(txt) {
+    var el = document.getElementById('pinput');
+    el.value = txt;
+    el.focus();
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function togTheme() {
+    light = !light;
+    if (light) {
+        document.body.style.background = '#f0f2f5';
+        document.body.style.color = '#1a1a2e';
+        document.getElementById('sidebar').style.background = '#ffffff';
+        document.getElementById('sidebar').style.borderColor = '#e0e0f0';
+        document.getElementById('topbar').style.background = '#ffffff';
+        document.getElementById('stats').style.background = '#ffffff';
+        document.getElementById('iarea').style.background = '#ffffff';
+        document.getElementById('chat').style.background = '#f0f2f5';
+        document.getElementById('pinput').style.background = '#ffffff';
+        document.getElementById('pinput').style.color = '#1a1a2e';
+        document.querySelectorAll('.msg.b .bubble').forEach(function(b) {
+            b.style.background = '#e8f5e9';
+            b.style.color = '#1a1a2e';
+            b.style.borderColor = '#c8e6c9';
+        });
+        document.querySelectorAll('.msg.u .bubble').forEach(function(b) {
+            b.style.background = '#ede9fe';
+            b.style.color = '#1a1a2e';
+            b.style.borderColor = '#ddd6fe';
+        });
+        document.querySelectorAll('.pb').forEach(function(p) {
+            p.style.background = '#f0f0ff';
+            p.style.color = '#1a1a2e';
+            p.style.borderColor = '#d0d0f0';
+        });
+        document.querySelectorAll('.cb').forEach(function(c) {
+            c.style.background = '#f0f0ff';
+            c.style.color = '#1a1a2e';
+            c.style.borderColor = '#d0d0f0';
+        });
+        document.querySelectorAll('.ic').forEach(function(i) {
+            i.style.background = '#f0f0ff';
+            i.style.borderColor = '#d0d0f0';
+        });
+    } else {
+        document.body.style.background = '#0d0d1a';
+        document.body.style.color = '#e8e8f0';
+        document.getElementById('sidebar').style.background = '#13132a';
+        document.getElementById('sidebar').style.borderColor = '#2a2a4a';
+        document.getElementById('topbar').style.background = '#1a1a2e';
+        document.getElementById('stats').style.background = '#1a1a2e';
+        document.getElementById('iarea').style.background = '#1a1a2e';
+        document.getElementById('chat').style.background = '#0d0d1a';
+        document.getElementById('pinput').style.background = '#13132a';
+        document.getElementById('pinput').style.color = '#e8e8f0';
+        document.querySelectorAll('.msg.b .bubble').forEach(function(b) {
+            b.style.background = '#0f2d1f';
+            b.style.color = '#e8e8f0';
+            b.style.borderColor = '#2a2a4a';
+        });
+        document.querySelectorAll('.msg.u .bubble').forEach(function(b) {
+            b.style.background = '#1e1b4b';
+            b.style.color = '#e8e8f0';
+            b.style.borderColor = '#2a2a4a';
+        });
+        document.querySelectorAll('.pb').forEach(function(p) {
+            p.style.background = '#16213e';
+            p.style.color = '#e8e8f0';
+            p.style.borderColor = '#2a2a4a';
+        });
+        document.querySelectorAll('.cb').forEach(function(c) {
+            c.style.background = '#16213e';
+            c.style.color = '#e8e8f0';
+            c.style.borderColor = '#2a2a4a';
+        });
+        document.querySelectorAll('.ic').forEach(function(i) {
+            i.style.background = '#16213e';
+            i.style.borderColor = '#2a2a4a';
+        });
+    }
+}
+
+function clrChat() {
+    if (!confirm('Clear all messages?')) return;
+    document.getElementById('chat').innerHTML =
+        '<div class="msg b"><div class="meta"><span>LLM</span></div>' +
+        '<div class="bubble">Chat cleared! Ready for new stories.</div></div>';
+    tokens = 0;
+    msgs   = 0;
+    document.getElementById('st-tok').textContent  = '0';
+    document.getElementById('st-msg').textContent  = '0';
+    document.getElementById('st-last').textContent = '-';
+}
+
+function dlStories() {
+    var bs  = document.querySelectorAll('.bubble');
+    var out = '=== My LLM Stories ===\n\n';
+    bs.forEach(function(b) { out += b.innerText + '\n\n---\n\n'; });
+    var blob = new Blob([out], { type: 'text/plain' });
+    var a    = document.createElement('a');
+    a.href   = URL.createObjectURL(blob);
+    a.download = 'llm_stories.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function cpMsg(btn) {
+    var txt = btn.closest('.msg').querySelector('.bubble').innerText;
+    navigator.clipboard.writeText(txt).then(function() {
+        btn.textContent = 'OK';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+    });
+}
+
+function addMsg(role, html) {
+    var chat = document.getElementById('chat');
+    var d    = document.createElement('div');
+    d.className = 'msg ' + role;
+    var t = new Date().toLocaleTimeString(
+        [], { hour: '2-digit', minute: '2-digit' }
+    );
+    if (role === 'b') {
+        d.innerHTML =
+            '<div class="meta">' +
+            '<span>LLM ' + t + '</span>' +
+            '<span class="mmeta"></span>' +
+            '</div>' +
+            '<div class="bubble">' + html + '</div>';
+    } else {
+        d.innerHTML =
+            '<div class="meta" style="justify-content:flex-end">' +
+            '<span>You ' + t + '</span>' +
+            '</div>' +
+            '<div class="bubble">' + html + '</div>';
+    }
+    chat.appendChild(d);
+    chat.scrollTop = chat.scrollHeight;
+    if (light) {
+        var bub = d.querySelector('.bubble');
+        if (role === 'b') {
+            bub.style.background  = '#e8f5e9';
+            bub.style.color       = '#1a1a2e';
+            bub.style.borderColor = '#c8e6c9';
+        } else {
+            bub.style.background  = '#ede9fe';
+            bub.style.color       = '#1a1a2e';
+            bub.style.borderColor = '#ddd6fe';
+        }
+    }
+    return d;
+}
+
+function doSend() {
+    if (busy) return;
+    var inp  = document.getElementById('pinput');
+    var txt  = inp.value.trim();
+    if (!txt) return;
+
+    var temp = parseFloat(document.getElementById('sl-temp').value);
+    var topk = parseInt(document.getElementById('sl-topk').value);
+    var maxt = parseInt(document.getElementById('sl-maxt').value);
+
+    addMsg('u', txt);
+    inp.value        = '';
+    inp.style.height = 'auto';
+    msgs++;
+    busy = true;
+    document.getElementById('sbtn').disabled = true;
+
+    var respEl  = addMsg('b',
+        '<div class="dots"><span>●</span><span>●</span><span>●</span></div>'
+    );
+    var bub     = respEl.querySelector('.bubble');
+    var met     = respEl.querySelector('.mmeta');
+    var fullTxt = '';
+    var t0      = Date.now();
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET',
+        '/stream' +
+        '?prompt='         + encodeURIComponent(txt) +
+        '&temperature='    + temp +
+        '&top_k='          + topk +
+        '&max_new_tokens=' + maxt,
+        true
+    );
+
+    var lastIdx = 0;
+
+    xhr.onprogress = function() {
+        var raw    = xhr.responseText.slice(lastIdx);
+        lastIdx    = xhr.responseText.length;
+        var lines  = raw.split('\n');
+        lines.forEach(function(line) {
+            line = line.trim();
+            if (!line || line === 'data: [DONE]') return;
+            if (line.indexOf('data: ') === 0) {
+                try {
+                    var obj = JSON.parse(line.slice(6));
+                    if (obj.token) {
+                        fullTxt += obj.token;
+                        bub.textContent = fullTxt;
+                        if (light) {
+                            bub.style.background  = '#e8f5e9';
+                            bub.style.color       = '#1a1a2e';
+                            bub.style.borderColor = '#c8e6c9';
+                        }
+                        var chat = document.getElementById('chat');
+                        chat.scrollTop = chat.scrollHeight;
+                    }
+                } catch(e) {}
+            }
+        });
+    };
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) return;
+        var sec  = ((Date.now() - t0) / 1000).toFixed(1);
+        var toks = fullTxt.split(' ').length;
+        tokens  += toks;
+        document.getElementById('st-tok').textContent  = tokens;
+        document.getElementById('st-msg').textContent  = msgs;
+        document.getElementById('st-last').textContent =
+            sec + 's';
+        met.innerHTML =
+            sec + 's ' +
+            '<button class="ab" onclick="cpMsg(this)">Copy</button>';
+        busy = false;
+        document.getElementById('sbtn').disabled = false;
+        document.getElementById('pinput').focus();
+    };
+
+    xhr.onerror = function() {
+        bub.textContent = 'Network error!';
+        busy = false;
+        document.getElementById('sbtn').disabled = false;
+    };
+
+    xhr.send();
+}
+</script>
+</body>
+</html>

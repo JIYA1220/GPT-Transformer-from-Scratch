@@ -1,0 +1,36 @@
+model:
+  vocab_size     : 50257
+  context_length : 256
+  emb_dim        : 256
+  n_heads        : 8
+  n_layers       : 4
+  drop_rate      : 0.3
+  qkv_bias       : false
+  norm_type      : "rmsnorm"
+
+training:
+  learning_rate  : 2.0e-4
+  min_lr         : 1.0e-5
+  num_epochs     : 10
+  batch_size     : 8
+  stride         : 128
+  eval_freq      : 50
+  eval_iter      : 10
+  max_grad_norm  : 1.0
+  warmup_epochs  : 1
+  train_ratio    : 0.90
+  start_context  : "Once upon a time"
+  best_model     : "best_model.pth"
+  experiment_log : "experiments/log.csv"
+
+data:
+  source         : "tinystories"
+  file_path      : "data/tinystories.txt"
+  start_context  : "Once upon a time"
+
+paths:
+  model_save     : "gpt_model.pth"
+  best_model     : "best_model.pth"
+  experiment_log : "experiments/log.csv"
+  loss_plot      : "experiments/loss_plot.png"
+  lr_plot        : "experiments/lr_plot.png"
