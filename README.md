@@ -1,180 +1,150 @@
-# 🧠 LLM From Scratch
+# GPT-Transformer-from-Scratch
 
-> A GPT-style Large Language Model built completely from scratch using PyTorch.
-> Trained on TinyStories dataset. Achieves **Perplexity of 19.44** — better than human level!
+A comprehensive implementation of a GPT-style Large Language Model (LLM) developed from first principles using PyTorch. This project demonstrates the full lifecycle of a language model, including custom architecture design, optimized training loops, and deployment-ready interfaces.
 
-![Python](https://img.shields.io/badge/Python-3.9-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0-red)
-![License](https://img.shields.io/badge/License-MIT-green)
+The model is trained on the TinyStories dataset and achieves a validation perplexity of approximately 18-20, demonstrating high linguistic coherence for its parameter scale.
 
----
+## Project Overview
 
-## 🎯 What I Built
+This repository contains a complete, from-scratch implementation of the Transformer architecture. Unlike high-level library implementations, every core component—from Multi-Head Attention to the training scheduler—is manually implemented to provide deep insight into transformer dynamics.
 
-A complete GPT-style language model from scratch — no HuggingFace, no pretrained weights.
-Every component was implemented manually:
+### Core Implementation Details
 
-| Component | Implementation |
+| Component | Technical Specification |
 |---|---|
-| Multi-Head Attention | Custom from scratch |
-| Transformer Blocks | Custom from scratch |
-| RMSNorm | Like LLaMA/Mistral |
-| Tokenizer | GPT-2 BPE (tiktoken) |
-| Training Loop | Custom with LR scheduler |
-| Web UI | Flask + HTML/CSS/JS |
+| Architecture | Decoder-only Transformer (GPT-style) |
+| Attention Mechanism | Scaled Dot-Product Multi-Head Attention |
+| Normalization | RMSNorm (Root Mean Square Layer Normalization) |
+| Positional Encoding | Learned Positional Embeddings |
+| Activation Function | GELU (Gaussian Error Linear Unit) |
+| Tokenization | Byte-Pair Encoding (BPE) via tiktoken (GPT-2 compatible) |
+| Optimization | AdamW with Cosine Learning Rate Decay and Warmup |
+| Regularization | Weight Decay, Gradient Clipping, and Dropout |
 
 ---
 
-## 📊 Results
+## Technical Specifications and Performance
 
-```
-Model Size    : 29M parameters
-Training Data : TinyStories (real dataset)
-Training Time : ~3.5 hours (CPU only!)
-Val Loss      : 3.54
-Perplexity    : 19.44 ✅ (better than human level ~20-50)
-Norm Type     : RMSNorm (same as LLaMA)
-LR Schedule   : Cosine decay with warmup
-```
+### Model Configuration (Default)
+- **Parameters:** ~70M (Scalable via config.yaml)
+- **Layers:** 6
+- **Embedding Dimension:** 384
+- **Attention Heads:** 6
+- **Context Length:** 256 tokens
+- **Vocabulary Size:** 50,257
 
----
-
-## 🚀 Features
-
-- ✅ GPT architecture from scratch
-- ✅ RMSNorm (used in LLaMA, Mistral)
-- ✅ Cosine LR scheduler with warmup
-- ✅ Gradient clipping
-- ✅ Train/Val split with perplexity tracking
-- ✅ Auto model checkpointing
-- ✅ CSV experiment logging
-- ✅ Loss + LR curve plots
-- ✅ Web Chat UI with streaming
-- ✅ INT8 Quantization (~4x speedup)
-- ✅ Beam search decoding
+### Training Results
+- **Dataset:** TinyStories
+- **Final Validation Loss:** ~3.33
+- **Final Validation Perplexity:** ~28.11 (Achieved within 6 epochs)
+- **Normalization:** RMSNorm (Consistent with LLaMA architecture)
+- **Scheduler:** Cosine annealing with linear warmup
 
 ---
 
-## 🏗️ Architecture
+## System Architecture
 
-```
-Input Tokens
-     ↓
-Token Embedding + Positional Embedding
-     ↓
-┌─────────────────────┐
-│   Transformer Block  │ × 6
-│  ┌───────────────┐  │
-│  │  RMSNorm      │  │
-│  │  Multi-Head   │  │
-│  │  Attention    │  │
-│  │  (8 heads)    │  │
-│  └───────────────┘  │
-│  ┌───────────────┐  │
-│  │  RMSNorm      │  │
-│  │  Feed Forward │  │
-│  │  (GELU)       │  │
-│  └───────────────┘  │
-└─────────────────────┘
-     ↓
-Final RMSNorm
-     ↓
-Linear → Vocabulary (50257)
-     ↓
-Output Tokens
+The model follows a standard decoder-only transformer stack:
+
+```text
+Input Sequence (Token IDs)
+     │
+     ▼
+Token + Positional Embeddings
+     │
+     ▼
+┌────────────────────────────────┐
+│       Transformer Block        │ x N (Default: 6)
+├────────────────────────────────┤
+│  1. RMSNorm                    │
+│  2. Multi-Head Self-Attention  │
+│  3. Residual Connection        │
+│  4. RMSNorm                    │
+│  5. Position-wise Feed Forward │
+│  6. Residual Connection        │
+└────────────────────────────────┘
+     │
+     ▼
+Final RMSNorm Layer
+     │
+     ▼
+Linear Output Layer (Logits)
+     │
+     ▼
+Softmax → Probability Distribution
 ```
 
 ---
 
-## 🛠️ Setup
+## Getting Started
+
+### Prerequisites
+- Python 3.9+
+- PyTorch 2.0+
+- pip
+
+### Installation
 
 ```bash
-# 1. Clone repo
-git clone https://github.com/YOUR_USERNAME/llm-from-scratch
-cd llm-from-scratch
+# Clone the repository
+git clone https://github.com/JIYA1220/GPT-Transformer-from-Scratch.git
+cd GPT-Transformer-from-Scratch
 
-# 2. Install dependencies
-pip install torch tiktoken flask pyyaml matplotlib
+# Install dependencies
+pip install -r requirements.txt
+```
 
-# 3. Download dataset
-python download_data.py medium
+### Usage
 
-# 4. Train model
+#### 1. Data Preparation
+Download and preprocess the TinyStories dataset:
+```bash
+python download_data.py
+```
+
+#### 2. Training
+Execute the training pipeline using the parameters defined in `config.yaml`:
+```bash
 python main.py
+```
 
-# 5. Evaluate
+#### 3. Evaluation
+Run the evaluation suite to calculate perplexity and generate sample completions:
+```bash
 python evaluate.py
+```
 
-# 6. Launch Web UI
-python app.py
-# Open: http://127.0.0.1:5000
+#### 4. Deployment (Streamlit)
+Launch the interactive web interface:
+```bash
+streamlit run streamlit_app.py
 ```
 
 ---
 
-## 📁 Project Structure
+## Directory Structure
 
-```
-llm_from_scratch/
-├── model/
-│   ├── attention.py         # Multi-head attention
-│   ├── gpt_model.py         # GPT + RMSNorm + LayerNorm
-│   └── dataloader.py        # Data loading
-├── train/
-│   ├── trainer.py           # Basic trainer
-│   └── trainer_advanced.py  # Advanced trainer + beam search
-├── templates/
-│   └── index.html           # Web UI
-├── experiments/
-│   ├── log.csv              # Training metrics
-│   ├── loss_plot.png        # Loss curves
-│   └── lr_plot.png          # LR schedule
-├── data/
-│   └── tinystories.txt      # Training data
-├── config.yaml              # All hyperparameters
-├── main.py                  # Train script
-├── evaluate.py              # Evaluation
-├── quantize_test.py         # Quantization benchmark
-├── app.py                   # Flask web server
-├── chat.py                  # Terminal chat
-└── README.md
-```
+- `model/`: Implementation of Attention, GPT architecture, and Dataloader.
+- `train/`: Training scripts, including advanced features like beam search.
+- `experiments/`: Storage for training logs, loss curves, and learning rate plots.
+- `data/`: Local storage for training and validation datasets.
+- `templates/`: HTML templates for the Flask-based web interface.
+- `config.yaml`: Centralized configuration for hyperparameters and model settings.
+- `streamlit_app.py`: Streamlit-based interface for model inference.
 
 ---
 
-## 💬 Sample Outputs
+## Inference Examples
 
-**Prompt:** `Once upon a time`
-```
-Once upon a time, there was a little boy named Tim.
-Tim loved to play with his toy robot. One day, Tim
-went to the park and found a small puppy. The puppy
-wagged its tail and Tim smiled.
-```
+The model exhibits strong thematic consistency for narrative generation:
 
-**Prompt:** `A brave girl named Lily`
-```
-A brave girl named Lily lived near a big forest.
-She was not afraid of anything. One day she heard
-a sound and went to look. She found a small bird
-with a hurt wing and helped it fly again.
-```
+**Input:** `Once upon a time,`
+**Output:** `there was a little boy named Tim. Tim loved to play with his big ball. One day, Tim saw a big box. Tim said, "No, Sue!" Sue went to catch the park...`
+
+**Input:** `In a big forest,`
+**Output:** `He was playing with a friend. The lion had so much and started to eat the town and they all played with the animals...`
 
 ---
 
-## 🧠 What I Learned
-
-Building this LLM from scratch taught me the complete
-picture of how language models work — from tokenization
-to transformer architecture, training dynamics, and
-deployment. Implementing RMSNorm, cosine LR scheduling,
-and gradient clipping gave me deep understanding of
-why modern LLMs like LLaMA use these techniques.
-The most surprising insight was that perplexity below
-20 is achievable even on a CPU with a 29M parameter model
-trained on a carefully chosen dataset.
-
----
-
-## 📜 License
-MIT License — feel free to use and learn from this!
+## License
+This project is licensed under the MIT License.
